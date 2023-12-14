@@ -1,0 +1,85 @@
+before:
+  hooks:
+    - go mod download
+    - go mod tidy
+builds:
+-
+  id: homein-linux
+  env:
+    - CGO_ENABLED=0
+  goos:
+    - linux
+  goarch:
+    - amd64
+  ldflags:
+    - -s -w -X github.com/takumakume/homein/version.Version={{.Version}}
+-
+  id: homein-darwin-windows
+  env:
+    - CGO_ENABLED=0
+  goos:
+    - darwin
+    - windows
+  goarch:
+    - amd64
+  ldflags:
+    - -s -w -X github.com/takumakume/homein/version.Version={{.Version}}
+-
+  id: homein-darwin-arm64
+  env:
+    - CGO_ENABLED=0
+  goos:
+    - darwin
+    - linux
+  goarch:
+    - arm64
+  ldflags:
+    - -s -w -X github.com/takumakume/homein/version.Version={{.Version}}    
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Version }}-dev"
+changelog:
+  skip: true
+dockers:
+  -
+    use: buildx
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - 'docker.io/takumakume/homein:{{ .Version }}-amd64'
+      - 'docker.io/takumakume/homein:latest-amd64'
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/takumakume/homein"
+  -
+    use: buildx
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - 'docker.io/takumakume/homein:{{ .Version }}-arm64'
+      - 'docker.io/takumakume/homein:latest-arm64'
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/takumakume/homein"
+docker_manifests:
+  - name_template: 'docker.io/takumakume/homein:latest'
+    image_templates:
+      - docker.io/takumakume/homein:latest-amd64
+      - docker.io/takumakume/homein:latest-arm64
+  - name_template: docker.io/takumakume/homein:{{ .Version }}
+    image_templates:
+      - docker.io/takumakume/homein:{{ .Version }}-amd64
+      - docker.io/takumakume/homein:{{ .Version }}-arm64
