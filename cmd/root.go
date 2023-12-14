@@ -10,10 +10,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/beta/freetype/truetype"
 	"github.com/corona10/goimagehash"
 	"github.com/fogleman/gg"
-	"github.com/k1LoW/ffff"
 	"github.com/mattn/go-lsd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,8 +19,8 @@ import (
 	"golang.org/x/image/font/opentype"
 )
 
-//go:embed ipag.ttf
-var jpFontFile embed.FS
+//go:embed ipag.ttf monaco.ttf
+var fontFile embed.FS
 
 var rootCmd = &cobra.Command{
 	Use:   "homein",
@@ -98,35 +96,30 @@ func argsValidation(args []string) error {
 func run(s1, s2 string) error {
 	ld, lp := levenshtein(s1, s2)
 	fmt.Printf("levenshtein distance: %d, levenshtein percent: %.2f%%\n", ld, lp*100)
-	to := &truetype.Options{
-		Size:    1.0,
-		DPI:     1200,
-		Hinting: font.HintingFull,
-	}
+
 	oo := &opentype.FaceOptions{
 		Size:    1.0,
 		DPI:     1200,
 		Hinting: font.HintingFull,
 	}
-	face, err := ffff.FuzzyFindFace("Monaco", to, oo)
+
+	fontFileName := "monaco.ttf"
+	if isJapanese(fmt.Sprintf("%s%s", s1, s2)) {
+		fontFileName = "ipag.ttf"
+	}
+	data, err := fs.ReadFile(fontFile, fontFileName)
+	if err != nil {
+		return (err)
+	}
+
+	tt, err := opentype.Parse(data)
 	if err != nil {
 		return err
 	}
-	if isJapanese(fmt.Sprintf("%s%s", s1, s2)) {
-		data, err := fs.ReadFile(jpFontFile, "ipag.ttf")
-		if err != nil {
-			return (err)
-		}
 
-		tt, err := opentype.Parse(data)
-		if err != nil {
-			return err
-		}
-
-		face, err = opentype.NewFace(tt, oo)
-		if err != nil {
-			return err
-		}
+	face, err := opentype.NewFace(tt, oo)
+	if err != nil {
+		return err
 	}
 
 	h := 30
