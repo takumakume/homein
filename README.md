@@ -1,4 +1,4 @@
-# homein
+# homein [PoC]
 
 Detecting homograph domains using Levenshtein and Hamming distance.
 
