@@ -97,7 +97,7 @@ func argsValidation(args []string) error {
 
 func run(s1, s2 string) error {
 	ld, lp := levenshtein(s1, s2)
-	fmt.Printf("levenshtein distance: %d, levenshtein percent: %f\n", ld, lp)
+	fmt.Printf("levenshtein distance: %d, levenshtein percent: %.2f%%\n", ld, lp*100)
 	to := &truetype.Options{
 		Size:    1.0,
 		DPI:     1200,
